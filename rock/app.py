@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, Response
-import requests
 
-from dal import process_results
+from dal import process_results, fetch_some_data
 
 app = Flask(__name__)
 
@@ -19,7 +18,7 @@ def api_hello_world():
 
 @app.route('/rock/')
 def api_get_rock():
-    results = requests.get(rock_api_url)
+    results = fetch_some_data(rock_api_url)
     return build_result_response(results)
 
 

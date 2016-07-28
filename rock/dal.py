@@ -1,3 +1,7 @@
+import requests
+from requests import ConnectionError
+
+
 def process_results(results):
     if results.status_code == 404:
         return {'message': 'Rock Not found!'}
@@ -15,3 +19,13 @@ def process_file(filename):
         for line in proc_file:
             lines.append(line.strip('\n'))
     return lines
+
+
+def fetch_some_data(url):
+    session = requests.Session()
+    results = None
+    try:
+        results = session.get(url)
+    except ConnectionError as exc_info:
+        print(str(exc_info))
+    return results

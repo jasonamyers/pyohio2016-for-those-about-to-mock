@@ -54,7 +54,7 @@
 
 ## Unittest TestSuite Example
 
-```python
+```
 import unittest
 
 from metal.hair import count_hairspray_cans
@@ -81,7 +81,7 @@ class TestRock(unittest.TestCase):
 
 ## Py.Test TestSuite Example
 
-```python
+```
 import pytest
 
 from metal.hair import count_hairspray_cans
@@ -101,6 +101,7 @@ class TestRock:
 ## Testing Vocabulary Lessons
 
 ^ Disclaimer all these bands are awesome, okay maybe not spinal tap. I had to find a way to work in my favorite rock covers.
+
 ---
 
 ![](spinal_tap.jpg)
@@ -131,7 +132,7 @@ class TestRock:
 ## Our First Code to Test
 
 ### app.py
-```python
+```
 def hello_world():
     return {'message': 'Hello World'}
 ```
@@ -139,7 +140,7 @@ def hello_world():
 ## Our First Test
 
 ### unittests.py
-```python
+```
 import unittest
 
 from app import hello_world
@@ -164,7 +165,7 @@ OK
 ---
 
 ### dal.py
-```python
+```
 def process_results(results):
     if results.status_code == 404:
         return {'message': 'Rock Not found!'}
@@ -179,7 +180,7 @@ def process_results(results):
 ---
 
 ### unittests.py
-```python
+```
     def test_process_results_not_found(self):
          Faker = namedtuple("Faker", ['status_code', ])
          test_object = Faker(status_code=404)
@@ -199,7 +200,7 @@ Ran 2 tests in 0.000s
 ---
 
 ### dal.py
-```python
+```
 def process_results(results):
     if results.status_code == 404:
         return {'message': 'Rock Not found!'}
@@ -214,7 +215,7 @@ def process_results(results):
 ---
 
 ### unittests.py
-```python
+```
     def test_process_results_success(self):
         test_object = MagicMock()
         test_object.status_code = 200
@@ -239,7 +240,7 @@ Ran 3 tests in 0.001s
 
 ---
 
-```python
+```
 from mock import call
 
 class TestDal(unittest.TestCase)
@@ -272,7 +273,7 @@ class TestDal(unittest.TestCase)
 
 ---
 
-```python
+```
 def test_process_results_bad_status(self):
       test_object = MagicMock()
       test_object.status_code = 'cookies'
@@ -284,7 +285,7 @@ def test_process_results_bad_status(self):
 
 ---
 
-```python
+```
 def test_process_results_bad_status_message(self):
       test_object = MagicMock()
       test_object.status_code = 'cookies'
@@ -299,7 +300,7 @@ def test_process_results_bad_status_message(self):
 
 ---
 
-```python
+```
 def test_process_results_bad_json_call(self):
       test_object = MagicMock()
       test_object.status_code = 200
@@ -324,11 +325,11 @@ def test_process_results_bad_json_call(self):
 # Mocking builtins
 
 * ``__builtin__`` in Python 2 (boo/hiss)
-* ```builtins`` in Python 3 (cheers)
+* ``builtins`` in Python 3 (cheers)
 
 ---
 
-```python
+```
 @patch('__builtin__.open')
 def test_process_file(self, open_mock):
     fake_file = BytesIO(b'Joan Jett\nJanis Joplin\nAlanis Morissette')
@@ -344,5 +345,127 @@ def test_process_file(self, open_mock):
 ![](stevie-nicks.jpg)
 
 ^ Let's take a breather like the interludes in a great Stevie Nicks song...
+
+---
+
+![](requests-sidebar.png)
+
+^ requests
+
+---
+
+```
+def fetch_some_data(url):
+    session = requests.Session()
+    results = None
+    try:
+        results = session.get(url)
+    except ConnectionError as exc_info:
+        print(str(exc_info))
+    return results
+```
+
+---
+
+```
+from mock import patch
+
+from rock.dal import fetch_some_data
+
+
+@patch('rock.dal.requests.Session')
+def test_fetch_some_data(requests_mock):
+    requests_mock.return_value.get.return_value = 'Metalica'
+    test_url = 'http://cookies.me/eat'
+    results = fetch_some_data(test_url)
+    assert 'Metalica' == results
+    requests_mock.return_value.get.assert_called_once_with(test_url)
+```
+
+---
+
+```
+from requests import ConnectionError
+
+@patch('rock.dal.requests.Session')
+def test_fetch_some_data_conn_error(requests_mock):
+    requests_mock.return_value.get.side_effect = ConnectionError('boom')
+    test_url = 'http://cookies.me/eat'
+    results = fetch_some_data(test_url)
+    assert results is None
+    requests_mock.return_value.get.assert_called_once_with(test_url)```
+```
+
+---
+
+# Betamax
+
+---
+
+![](old-rockers.jpg)
+
+^ Allows you to record and play back requests
+
+---
+
+```
+def main():
+    session = requests.Session()
+    recorder = betamax.Betamax(
+        session, cassette_library_dir=CASSETTE_LIBRARY_DIR
+    )
+
+    with recorder.use_cassette('fetch_some_data'):
+        session.get('https://jsonplaceholder.typicode.com/posts')
+```
+
+---
+
+![](cassette.jpg)
+
+---
+
+```
+{"http_interactions": [{"request": {"body": {"string": "", "encoding": "utf-8"},
+"headers": {"Connection": ["keep-alive"], "Accept-Encoding": ["gzip, deflate"],
+"Accept": ["*/*"], "User-Agent": ["python-requests/2.10.0"]}, "method": "GET",
+"uri": "https://jsonplaceholder.typicode.com/posts"}, "response":
+{"body": {"base64_string": ...}
+```
+
+---
+
+```
+import betamax
+
+with betamax.Betamax.configure() as config:
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    config.cassette_library_dir = os.path.join(current_dir, 'cassettes')
+
+@patch('rock.dal.requests')
+def test_fetch_some_data_betamax(requests_mock):
+    session = requests.Session()
+    requests_mock.Session.return_value = session
+    with betamax.Betamax(session).use_cassette('fetch_some_data'):
+        results = fetch_some_data('https://jsonplaceholder.typicode.com/posts')
+    assert 'body' in results.text
+    assert 1 == results.json()[0]['userId']
+```
+
+---
+
+```
+(for-those-about-to-mock) ~/d/f/rock ❯❯❯ py.test
+==================== test session starts ==============================
+platform darwin -- Python 2.7.12, pytest-2.9.2, py-1.4.31, pluggy-0.3.1
+rootdir: /Users/jasonmyers/dev/for-those-about-to-mock/rock, inifile:
+plugins: betamax-0.7.1
+collected 4 items
+
+tests/test_app.py .
+tests/test_dal.py ...
+
+=================== 4 passed in 0.08 seconds ==========================
+```
 
 ---
