@@ -29,3 +29,15 @@ def fetch_some_data(url):
     except ConnectionError as exc_info:
         print(str(exc_info))
     return results
+
+
+def str_to_int(value):
+    return int(value)
+
+
+def string_adder(value):
+    numbers = value.split(',')
+    clean_numbers = []
+    for number in numbers:
+        clean_numbers.append(str_to_int(number))
+    return sum(clean_numbers)

@@ -1,3 +1,3 @@
 {
-  "rock/tests/test_app.py": true
+  "rock/tests/test_api_gabbi.py::test_gabbits::['driver_test_hello_endpoint_wait_for_server_to_boot']": true
 }

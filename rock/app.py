@@ -13,7 +13,7 @@ def hello_world():
 
 @app.route('/hello/')
 def api_hello_world():
-    return jsonify(hello_world)
+    return jsonify(hello_world())
 
 
 @app.route('/rock/')

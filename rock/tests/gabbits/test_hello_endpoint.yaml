@@ -1,0 +1,14 @@
+tests:
+- name: wait for server to boot
+  GET: /hello/
+  poll:
+      count: 10
+      delay: 0.1
+  request_headers:
+      Accept: application/json
+
+  status: 200
+  response_headers:
+      Content-Type: application/json
+  response_json_paths:
+      $.message: Hello World

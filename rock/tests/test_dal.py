@@ -2,11 +2,12 @@ import os
 
 import betamax
 from betamax import Betamax
-from mock import patch
+from mock import patch, call
+import pytest
 import requests
 from requests import ConnectionError
 
-from rock.dal import fetch_some_data
+from rock.dal import fetch_some_data, string_adder, str_to_int
 
 
 with betamax.Betamax.configure() as config:
@@ -40,3 +41,16 @@ def test_fetch_some_data_betamax(requests_mock):
         results = fetch_some_data('https://jsonplaceholder.typicode.com/posts')
     assert 'body' in results.text
     assert 1 == results.json()[0]['userId']
+
+
+@patch('rock.dal.str_to_int')
+def test_string_adder(s2i_mock):
+    s2i_mock.side_effect = [2, 3]
+    result = string_adder("2,3")
+    assert result == 5
+    assert s2i_mock.mock_calls == [call("2"), call("3")]
+
+
+@pytest.mark.parametrize("test_input,expected", [("3", 3), ("-1", -1)])
+def test_str_to_int(test_input, expected):
+    assert str_to_int(test_input) == expected

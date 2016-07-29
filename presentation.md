@@ -5,7 +5,7 @@
 ## Why I Test
 
 * Test because I'm prone to silly mistakes
-* Because test a function often highlights bad function calls etc
+* Because test a function often highlights bad function signatures etc
 * Test to Enforce Behaviors (Good and Bad)
 
 ---
@@ -469,3 +469,133 @@ tests/test_dal.py ...
 ```
 
 ---
+
+# Testing API Endpoints
+
+---
+
+![](motley-crue.jpg)
+
+---
+
+```
+from flask import Flask, jsonify, Response
+
+
+app = Flask(__name__)
+
+
+def hello_world():
+    return {'message': 'Hello World'}
+
+
+@app.route('/hello/')
+def api_hello_world():
+    return jsonify(hello_world())
+```
+
+---
+
+```
+from flask_testing import LiveServerTestCase
+import requests
+
+from rock.app import app
+
+class ApiTest(LiveServerTestCase):
+
+    def create_app(self):
+        app.config['TESTING'] = True
+        # Default port is 5000
+        app.config['LIVESERVER_PORT'] = 8943
+        return app
+
+    def test_hello_endpoint(self):
+        response = requests.get(self.get_server_url() + '/hello/')
+        self.assertEqual(response.status_code, 200)
+```
+
+---
+
+# Gabbi
+
+---
+
+```
+tests:
+- name: wait for server to boot
+  GET: /hello/
+  poll:
+      count: 10
+      delay: 0.1
+  request_headers:
+      Accept: application/json
+
+  status: 200
+  response_headers:
+      Content-Type: application/json
+  response_json_paths:
+      $.message: Hello World
+```
+
+---
+
+
+```
+(for-those-about-to-mock) ~/d/for-those-about-to-mock ❯❯❯ sh ./rock/tests/test_api_gabbi.sh                                                                         * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+... 127.0.0.1 - - [28/Jul/2016 18:54:58] "GET /hello/ HTTP/1.1" 200 -
+✓ wait for server to boot
+
+----------------------------------------------------------------------
+Ran 1 test in 0.034s
+
+OK
+```
+---
+
+![](cheap-trick.jpg)
+
+^ Multiple returns
+
+---
+
+```
+def str_to_int(value):
+    return int(value)
+
+
+def string_adder(value):
+    numbers = value.split(',')
+    clean_numbers = []
+    for number in numbers:
+        clean_numbers.append(str_to_int(number))
+    return sum(clean_numbers)
+```
+
+---
+
+```
+@patch('rock.dal.str_to_int')
+def test_string_adder(s2i_mock):
+    s2i_mock.side_effect = [2, 3]
+    result = string_adder("2,3")
+    assert result == 5
+    assert s2i_mock.mock_calls == [call("2"), call("3")]
+```
+
+---
+
+![](ozzy.jpg)
+
+^ parametrized testing
+
+---
+```
+@pytest.mark.parametrize("test_input,expected", [("3", 3), ("-1", -1)])
+def test_str_to_int(test_input, expected):
+    assert str_to_int(test_input) == expected
+```
+
+---
+
+![](rock.jpg)
