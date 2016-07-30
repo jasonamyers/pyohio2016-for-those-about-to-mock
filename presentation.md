@@ -5,7 +5,7 @@
 ## Why I Test
 
 * Test because I'm prone to silly mistakes
-* Because test a function often highlights bad function signatures etc
+* Because testing a function often highlights bad function signatures etc
 * Test to Enforce Behaviors (Good and Bad)
 
 ---
@@ -186,9 +186,9 @@ def process_results(results):
 ### unittests.py
 ```
     def test_process_results_not_found(self):
-         Faker = namedtuple("Faker", ['status_code', ])
-         test_object = Faker(status_code=404)
-         result = process_results(test_object)
+         HellsBelles = namedtuple("HellsBelles", ['status_code', ])
+         hells_belles = HellsBelles(status_code=404)
+         result = process_results(hells_belles)
          self.assertDictEqual({'message': 'Rock Not Found!'}, result)
 ```
 
