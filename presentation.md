@@ -293,8 +293,6 @@ class TestDal(unittest.TestCase)
 
 ---
 
----
-
 ### dal.py
 ```
 def process_results(results):
