@@ -598,7 +598,8 @@ tests:
 
 
 ```
-(for-those-about-to-mock) ~/d/for-those-about-to-mock ❯❯❯ sh ./rock/tests/test_api_gabbi.sh                                                                         * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+(for-those-about-to-mock) ~/d/for-those-about-to-mock ❯❯❯ sh ./rock/tests/test_api_gabbi.sh
+* Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 ... 127.0.0.1 - - [28/Jul/2016 18:54:58] "GET /hello/ HTTP/1.1" 200 -
 ✓ wait for server to boot
 
