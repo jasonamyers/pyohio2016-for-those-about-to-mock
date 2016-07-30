@@ -19,7 +19,7 @@
 
 ---
 
-![](quiet_riot.jpg)
+![fit](quiet_riot.jpg)
 
 ^ Unittest is our Quiet Riot
 ^ Part of the Standard Library
@@ -31,7 +31,7 @@
 
 ---
 
-![](foo_fighters.jpg)
+![fit](foo_fighters.jpg)
 
 ^ Py.Test is our Foo Fighters
 
@@ -104,19 +104,19 @@ class TestRock:
 
 ---
 
-![](spinal_tap.jpg)
+![fit](spinal_tap.jpg)
 
 ^ Fake: objects actually have working implementations, but usually take some shortcut which makes them not suitable for production.
 
 ---
 
-![](mini_kiss.jpg)
+![fit](mini_kiss.jpg)
 
 ^ Mock: a class that implements an interface and allows the ability to dynamically set the values to return/exceptions to throw from particular methods and provides the ability to check if particular methods have been called/not called.
 
 ---
 
-![](hells_belles.jpg)
+![fit](hells_belles.jpg)
 
 ^ Stub: provide canned answers to calls made during the test, usually not responding at all to anything outside what's programmed in for the test. (The Belles do originals sometimes.)
 
@@ -128,6 +128,8 @@ class TestRock:
 
 ![fit](school_house.jpg)
 
+^ Okay fine maybe it is whatever man
+
 ---
 ## Our First Code to Test
 
@@ -136,6 +138,8 @@ class TestRock:
 def hello_world():
     return {'message': 'Hello World'}
 ```
+^ simple function that returns a dictionary
+
 ---
 ## Our First Test
 
@@ -212,18 +216,23 @@ def process_results(results):
         raise ValueError('SHARON!')
 ```
 
+^ To test this we need to pass in something for results that has a status_code attribute and a json() method... We could summon Spinal Tap and fake this, but what we really want is Mini Kiss, I need something that acts like a real result from requests, but isn't the full response object.
+
 ---
 
 ### unittests.py
 ```
     def test_process_results_success(self):
-        test_object = MagicMock()
-        test_object.status_code = 200
-        test_object.json.return_value = {'message': 'This is just a tribute!'}
-        result = process_results(test_object)
+        mini_kiss = MagicMock()
+        mini_kiss.status_code = 200
+        mini_kiss.json.return_value = {'message': 'This is just a tribute!'}
+        result = process_results(mini_kiss)
         self.assertDictEqual({'message': 'This is just a tribute!'}, result)
 
 ```
+
+
+
 ---
 
 ```bash
@@ -234,7 +243,7 @@ Ran 3 tests in 0.001s
 ```
 ---
 
-![](jagger.jpg)
+![fit](jagger.jpg)
 
 ^ But Umm it called that function on our test_object...
 
@@ -245,18 +254,27 @@ from mock import call
 
 class TestDal(unittest.TestCase)
     def test_process_results_success(self):
-          test_object = MagicMock()
-          test_object.status_code = 200
-          test_object.json.return_value = {'message': 'This is just a tribute!'}
-          result = process_results(test_object)
+          mini_kiss = MagicMock()
+          mini_kiss.status_code = 200
+          mini_kiss.json.return_value = {'message': 'This is just a tribute!'}
+          result = process_results(mini_kiss)
           self.assertDictEqual({'message': 'This is just a tribute!'}, result)
 
           expected_calls = [call.json()]
-          self.assertListEqual(expected_calls, test_object.mock_calls)
+          self.assertListEqual(expected_calls, mini_kiss.mock_calls)
   ```
+
+^ Let's check that call to make sure it happened and did the right thing
+
+^ okay breath deep for a sec...
+
 ---
 
-![](mountain.jpg)
+![fit](mountain.jpg)
+
+^ What have we learned here? That we can summon mini kiss via python at will?
+
+^ This is just the surface of the awesome things you can do with MagicMock. For example, you can feed it a class as a spec and it will model the mock after that class!!! *mind blow*
 
 ^ Mountain of Mississippi Queen Fame.
 
@@ -269,54 +287,92 @@ class TestDal(unittest.TestCase)
 
 ---
 
-![](morrison.jpg)
+![fit](morrison.jpg)
+
+^ Far too soon Jim... far too soon.
+
+---
+
+---
+
+### dal.py
+```
+def process_results(results):
+    if results.status_code == 404:
+        return {'message': 'Rock Not found!'}
+    elif results.status_code == 500:
+        return {'message': 'Rock Imploded!'}
+    elif results.status_code == 200:
+        return results.json()
+    else:
+        raise ValueError('SHARON!')
+```
 
 ---
 
 ```
 def test_process_results_bad_status(self):
-      test_object = MagicMock()
-      test_object.status_code = 'cookies'
-      self.assertRaises(ValueError, process_results, test_object)
+      mini_kiss = MagicMock()
+      mini_kiss.status_code = 'cookies'
+      self.assertRaises(ValueError, process_results, mini_kiss)
 
       expected_calls = []
-      self.assertListEqual(expected_calls, test_object.mock_calls)
+      self.assertListEqual(expected_calls, mini_kiss.mock_calls)
 ```
 
 ---
 
 ```
 def test_process_results_bad_status_message(self):
-      test_object = MagicMock()
-      test_object.status_code = 'cookies'
+      mini_kiss = MagicMock()
+      mini_kiss.status_code = 'cookies'
       with self.assertRaises(ValueError) as exc_info:
-          process_results(test_object)
+          process_results(mini_kiss)
 
           self.assertTrue('SHARON!' in exc_info.exception)
 
       expected_calls = []
-      self.assertListEqual(expected_calls, test_object.mock_calls)
+      self.assertListEqual(expected_calls, mini_kiss.mock_calls)
+```
+
+^ We can validate the message the error raises as well
+
+---
+
+### dal.py
+```
+def process_results(results):
+    if results.status_code == 404:
+        return {'message': 'Rock Not found!'}
+    elif results.status_code == 500:
+        return {'message': 'Rock Imploded!'}
+    elif results.status_code == 200:
+        return results.json()
+    else:
+        raise ValueError('SHARON!')
 ```
 
 ---
 
+
 ```
 def test_process_results_bad_json_call(self):
-      test_object = MagicMock()
-      test_object.status_code = 200
-      test_object.json.side_effects = ValueError('Nickleback')
+      mini_kiss = MagicMock()
+      mini_kiss.status_code = 200
+      mini_kiss.json.side_effects = ValueError('Nickleback')
       with self.assertRaises(ValueError) as exc_info:
-          process_results(test_object)
+          process_results(mini_kiss)
 
           self.assertTrue('Nickleback' in exc_info.exception)
 
       expected_calls = [call.json()]
-      self.assertListEqual(expected_calls, test_object.mock_calls)
+      self.assertListEqual(expected_calls, mini_kiss.mock_calls)
 ```
+^ We can also have a mock throw an error for us to test our handling of that error.
 
 ---
 
-![](cooper-gill.jpg)
+![fit](cooper-gill.jpg)
 
 ^ Mocking built ins is ... odd
 
@@ -332,9 +388,9 @@ def test_process_results_bad_json_call(self):
 ```
 @patch('__builtin__.open')
 def test_process_file(self, open_mock):
-    fake_file = BytesIO(b'Joan Jett\nJanis Joplin\nAlanis Morissette')
+    spinal_tap = BytesIO(b'Joan Jett\nJanis Joplin\nAlanis Morissette')
     expected_results = ['Joan Jett', 'Janis Joplin', 'Alanis Morissette']
-    open_mock.return_value = fake_file
+    open_mock.return_value = spinal_tap
     results = process_file('cookies.csv')
 
     self.assertListEqual(expected_results, results)
@@ -342,13 +398,13 @@ def test_process_file(self, open_mock):
 
 ---
 
-![](stevie-nicks.jpg)
+![fit](stevie-nicks.jpg)
 
 ^ Let's take a breather like the interludes in a great Stevie Nicks song...
 
 ---
 
-![](requests-sidebar.png)
+![fit](requests-sidebar.png)
 
 ^ requests
 
@@ -402,7 +458,7 @@ def test_fetch_some_data_conn_error(requests_mock):
 
 ---
 
-![](old-rockers.jpg)
+![fit](old-rockers.jpg)
 
 ^ Allows you to record and play back requests
 
@@ -421,7 +477,7 @@ def main():
 
 ---
 
-![](cassette.jpg)
+![fit](cassette.jpg)
 
 ---
 
@@ -474,7 +530,9 @@ tests/test_dal.py ...
 
 ---
 
-![](motley-crue.jpg)
+![fit](motley-crue.jpg)
+
+^ There are a ton of ways to test API endpoints. In fact you could say there is a Motley Crue of tesing methods... for example, You can use the built in django and flask test clients. Or we could use requests.
 
 ---
 
@@ -553,7 +611,7 @@ OK
 ```
 ---
 
-![](cheap-trick.jpg)
+![fit](cheap-trick.jpg)
 
 ^ Multiple returns
 
@@ -585,7 +643,7 @@ def test_string_adder(s2i_mock):
 
 ---
 
-![](ozzy.jpg)
+![fit](ozzy.jpg)
 
 ^ parametrized testing
 
@@ -598,4 +656,4 @@ def test_str_to_int(test_input, expected):
 
 ---
 
-![](rock.jpg)
+![fit](rock.jpg)
